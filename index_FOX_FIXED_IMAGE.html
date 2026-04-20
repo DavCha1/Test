@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>FOX PERFECT FINAL FIXED</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+
+<style>
+#map { height:100vh; }
+
+/* MENU */
+.menu{
+ position:absolute;
+ bottom:20px;
+ left:50%;
+ transform:translateX(-50%);
+ display:flex;
+ gap:14px;
+ background:rgba(0,0,0,0.75);
+ padding:12px 18px;
+ border-radius:40px;
+ z-index:9999;
+}
+.menu button{
+ width:70px;height:70px;border-radius:50%;
+ border:none;background:#1e2a38;
+ display:flex;align-items:center;justify-content:center;
+}
+.menu img{width:70%;height:70%;}
+.menu button:first-child{font-size:30px;}
+
+/* FOX PANEL */
+.fox-panel{
+ position:fixed;
+ bottom:-80%;
+ left:50%;
+ transform:translateX(-50%);
+ width:520px;
+ height:320px;
+ background:url('fox_popup.png') no-repeat center/contain;
+ z-index:9999;
+ transition:.35s;
+}
+.fox-panel.active{bottom:130px;}
+
+/* CONTENT */
+.fox-content{
+ position:absolute;
+ top:155px;
+ left:70px;
+ right:70px;
+ max-width:380px;
+ font-family:Arial;
+ font-size:14px;
+ line-height:1.4;
+}
+
+.fox-title{
+ font-weight:bold;
+ font-size:18px;
+ margin-bottom:6px;
+}
+
+.tag{
+ display:inline-block;
+ background:#eee;
+ padding:3px 6px;
+ border-radius:6px;
+ font-size:11px;
+ margin-right:4px;
+}
+
+.btn{
+ margin-top:8px;
+ display:inline-block;
+ background:#2d8cff;
+ color:white;
+ padding:6px 10px;
+ border-radius:6px;
+ text-decoration:none;
+ font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="menu">
+ <button onclick="showAll()">🌍</button>
+ <button onclick="filterType('historic')"><img src="icons/castle.png"></button>
+ <button onclick="filterType('restaurant')"><img src="icons/food.png"></button>
+ <button onclick="filterType('museum')"><img src="icons/museum.png"></button>
+</div>
+
+<div id="map"></div>
+
+<div id="panel" class="fox-panel">
+ <div class="fox-content">
+   <div class="fox-title" id="title"></div>
+   <div id="tags"></div>
+   <div id="desc"></div>
+   <div id="anecdote" style="font-style:italic;margin-top:4px;"></div>
+   <a id="link" class="btn" target="_blank">Explorer</a>
+   <a href="#" class="btn" onclick="route()">Itinéraire</a>
+ </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+<script>
+
+var map=L.map('map').setView([50.4669,4.8675],13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+var markers=L.markerClusterGroup();
+map.addLayer(markers);
+
+let allData=null;
+let current=null;
+let routeLine=null;
+
+function getIcon(type){
+ let icon="castle.png";
+ if(type==="restaurant") icon="food.png";
+ if(type==="museum") icon="museum.png";
+ return L.icon({iconUrl:"icons/"+icon,iconSize:[40,40]});
+}
+
+fetch('https://raw.githubusercontent.com/DavCha1/Carte-namur/main/namur_10_enriched.geojson')
+.then(r=>r.json())
+.then(data=>{allData=data;displayData(allData);});
+
+function displayData(data){
+ markers.clearLayers();
+ data.features.forEach(f=>{
+  let c=f.geometry.coordinates;
+  let m=L.marker([c[1],c[0]],{icon:getIcon(f.properties.type)});
+  m.on('click',()=>{current=f;openPanel(f);});
+  markers.addLayer(m);
+ });
+}
+
+function filterType(type){
+ displayData({type:"FeatureCollection",features:allData.features.filter(f=>f.properties.type===type)});
+}
+function showAll(){displayData(allData);}
+
+function openPanel(f){
+ title.innerText=f.properties.name;
+ desc.innerText=f.properties.description||"";
+ anecdote.innerText=f.properties.anecdote||"";
+ link.href=f.properties.link||"#";
+
+ let tagsHTML="";
+ if(f.properties.type==="historic") tagsHTML+='<span class="tag">🏰 Historique</span>';
+ if(f.properties.type==="museum") tagsHTML+='<span class="tag">🏛️ Culture</span>';
+ if(f.properties.type==="restaurant") tagsHTML+='<span class="tag">🍴 Food</span>';
+ tagsHTML+='<span class="tag">⭐ Incontournable</span>';
+
+ tags.innerHTML=tagsHTML;
+ panel.classList.add("active");
+}
+
+map.on('click',()=>panel.classList.remove("active"));
+
+function route(){
+ if(!current) return;
+ navigator.geolocation.getCurrentPosition(pos=>{
+  let start=[pos.coords.longitude,pos.coords.latitude];
+  let end=current.geometry.coordinates;
+  fetch(`https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`)
+  .then(r=>r.json())
+  .then(data=>{
+    let coords=data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+    if(routeLine) map.removeLayer(routeLine);
+    routeLine=L.polyline(coords,{color:'#2d8cff',weight:5}).addTo(map);
+    map.fitBounds(routeLine.getBounds());
+  });
+ });
+}
+
+</script>
+
+</body>
+</html>

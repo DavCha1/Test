@@ -1,0 +1,85 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8675,
+          50.4603
+        ]
+      },
+      "properties": {
+        "name": "Citadelle de Namur",
+        "type": "historic",
+        "description": "Grande forteresse dominant la ville.",
+        "image": "images/citadelle.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8668,
+          50.4615
+        ]
+      },
+      "properties": {
+        "name": "Musée Félicien Rops",
+        "type": "museum",
+        "description": "Musée consacré à l’artiste belge.",
+        "image": "images/rops.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8655,
+          50.4622
+        ]
+      },
+      "properties": {
+        "name": "Cathédrale Saint-Aubain",
+        "type": "historic",
+        "description": "Cathédrale emblématique de Namur.",
+        "image": "images/cathedrale.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8682,
+          50.4598
+        ]
+      },
+      "properties": {
+        "name": "Parc Louise-Marie",
+        "type": "historic",
+        "description": "Parc urbain avec vue sur la Meuse.",
+        "image": "images/parc.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.869,
+          50.461
+        ]
+      },
+      "properties": {
+        "name": "Restaurant Exemple",
+        "type": "restaurant",
+        "description": "Cuisine locale moderne.",
+        "image": "images/resto.jpg"
+      }
+    }
+  ]
+}
